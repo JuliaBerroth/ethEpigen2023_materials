@@ -1,0 +1,63 @@
+---
+title: "assignment"
+output: html_document
+date: "2023-03-03"
+---
+
+# Using AnnotationHub
+
+```{r}
+suppressPackageStartupMessages({
+  library(AnnotationHub)
+  library(ensembldb)
+})
+```
+
+## Finding & downloading of Mus Musculus
+
+```{r}
+ah <- AnnotationHub()
+#display(ah)
+q1 <- query(ah, c("Mus Musculus","ensembl 102","GRCm38"))
+# q1
+ensdb1 <- ah[["AH89211"]]
+ensdb1
+```
+
+## Finding & downloading of mouse genome sequence
+
+```{r}
+q2 <- query(ah, c("Mus musculus","dna_sm","2bit","GRCm38"))
+# q2
+ensdb2 <- ah[["AH49775"]]
+ensdb2
+```
+
+## Finding & downloading drosophila melanogaster genome sequence
+
+```{r}
+q3 <- query(ah, c("drosophila melanogaster","dna_sm","2bit","BDGP6"))
+# q3
+ensdb3 <- ah[["AH90691"]]
+ensdb3
+```
+
+# Using the mouse EnsDb
+## Number of gene IDs & gene symbols for protein-coding genes
+
+```{r}
+gns <- genes(ensdb1,filter=TxBiotypeFilter("protein_coding"))
+# length(unique(gns$gene_id)) # In case the ids are not unique (which they are in this case)
+length(gns$gene_id)
+length(unique(gns$symbol))
+```
+
+## Distribution plot of the (spliced) length of protein-coding transcripts
+
+```{r}
+exs <- exons(ensdb1,filter=TxBiotypeFilter("protein_coding"))
+exsPerTx <- exonsBy(ensdb1, column=c("tx_id","tx_biotype"),
+                    filter=TxBiotypeFilter("protein_coding"))
+nbExonsPerPCtx <- lengths(exsPerTx)
+hist(nbExonsPerPCtx)
+```
