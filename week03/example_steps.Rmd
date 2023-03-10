@@ -26,9 +26,12 @@ of the factor Myc across the Kc167 Drosophila cell line.
 We download the data from ENCODE:
 
 ```{r, eval=FALSE}
+#eval=FALSE makes that it won't rerun the download everytime when to knit, but it is still there if you run it once
+options(timeout=3600) #we need to increase the download timeout since the file is large & cnx slow
 dir.create("raw")
-download.file("https://www.encodeproject.org/files/ENCFF014MOQ/@@download/ENCFF014MOQ.fastq.gz", dest="raw/Myc.fastq.gz")
-download.file("https://www.encodeproject.org/files/ENCFF179TMO/@@download/ENCFF179TMO.fastq.gz", dest="raw/input.fastq.gz")
+download.file("https://www.encodeproject.org/files/ENCFF014MOQ/@@download/ENCFF014MOQ.fastq.gz", dest="raw/Myc.fastq.gz", mode = "wb")
+download.file("https://www.encodeproject.org/files/ENCFF179TMO/@@download/ENCFF179TMO.fastq.gz", dest="raw/input.fastq.gz", mode = "wb")
+
 ```
 
 (Downloads have a timeout, so if your connection is slow or you're downloading a large file, you might need to change that, using for instance `options(timeout=600)`)
@@ -39,7 +42,7 @@ download.file("https://www.encodeproject.org/files/ENCFF179TMO/@@download/ENCFF1
 
 For this we will use shell commands:
 
-```{bash engine.opts='-l', eval=FALSE}
+```{bash engine.opts='-l'}
 mkdir -p raw_fastqc
 fastqc -o raw_fastqc --threads 4 raw/*.fastq.gz
 ```
@@ -147,7 +150,7 @@ We can then import the peaks in R:
 
 ```{r}
 peaks <- rtracklayer::import("peaks/Myc_peaks.narrowPeak")
-source("peaks/Myc_model.r")
+# source("peaks/Myc_model.r") --> skipping it for the moment
 ```
 
 

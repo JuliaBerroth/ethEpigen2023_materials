@@ -46,7 +46,7 @@ ensdb3
 ## Number of gene IDs & gene symbols for protein-coding genes
 
 ```{r}
-gns <- genes(ensdb1,filter=TxBiotypeFilter("protein_coding"))
+gns <- genes(ensdb1,filter=GenesBiotypeFilter("protein_coding")) #TxBiotypeFilter is here false (we search for genes), you should use GeneBiotypeFilter
 # length(unique(gns$gene_id)) # In case the ids are not unique (which they are in this case)
 length(gns$gene_id)
 length(unique(gns$symbol))
@@ -58,6 +58,13 @@ length(unique(gns$symbol))
 exs <- exons(ensdb1,filter=TxBiotypeFilter("protein_coding"))
 exsPerTx <- exonsBy(ensdb1, column=c("tx_id","tx_biotype"),
                     filter=TxBiotypeFilter("protein_coding"))
-nbExonsPerPCtx <- lengths(exsPerTx)
-hist(nbExonsPerPCtx)
+# nbExonsPerPCtx <- lengths(exsPerTx) false
+# hist(nbExonsPerPCtx)
+
+# with width we can get lengths of all exons per transcipt in a list
+ew <- width(exs)
+#by summing exon lengths per transcript we get spliced transcript lengths
+tl <- sum(ew)
+#plot
+hist(tl, breaks=100)
 ```
