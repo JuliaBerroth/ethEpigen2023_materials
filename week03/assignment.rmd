@@ -1,0 +1,88 @@
+---
+title: "assignment"
+output: html_document
+date: "2023-03-15"
+---
+
+# Assignment Week 03
+
+```{r}
+suppressPackageStartupMessages({
+  library(AnnotationHub)
+  library(Rsubread)
+  library(rtracklayer)
+  library(Biostrings)
+  library(Rfastp)
+  library(epiwraps)
+})
+ah <- AnnotationHub()
+```
+
+## Downloading the Drosophila ChiP-seq for the protein CTCF
+
+```{r}
+dir.create("raw")
+download.file("https://www.encodeproject.org/files/ENCFF127RRR/@@download/ENCFF127RRR.fastq.gz", dest = "raw/CTCF.fastq.gz", mode = "wb")
+
+```
+
+## Processing from the raw data
+
+### bam file
+
+```{r}
+dir.create("rfastp.trimmed")
+qualityControl <- lapply(c(CTFC = "raw/CTCF.fastq.gz"), FUN = function(x) {
+  Rfastp::rfastp(x,
+                 thread = 4,
+                 overrepresentationAnalysis = TRUE,
+                 outputFastq = file.path("rfastp.trimmed/",
+                                         gsub(
+                                           "\\.fastq\\.gz$",
+                                           "",
+                                           basename(x)
+                                         )
+                 )
+  )
+})
+```
+
+```{r}
+genome <- ah[["AH49674"]]
+dir.create("BDGP6_genome")
+export(import.2bit(genome),
+       "BDGP6_genome/genome.fasta.gz",
+       compress = TRUE)
+Rsubread::buildindex("BDGP6_genome/rsubread",
+                     reference = "BDGP6_genome/genome.fasta.gz")
+
+```
+
+```{r}
+dir.create("aligned")
+align.stats <- Rsubread::align(index = "BDGP6_genome/rsubread",
+                               type = "dna",
+                               readfile1 = c("rfastp.trimmed/CTCF_R1.fastq.gz"),
+                               output_file = c("aligned/CTCF.bam"),
+                               nthreads = 6,
+                               sortReadsByCoordinates = TRUE
+)
+align.stats
+```
+
+### peaks
+
+```{r}
+peaks <- callPeaks("aligned/CTCF.bam", fragLength = 50L)
+length(peaks)
+```
+
+## Report
+### Reads mapped: 3504769 (91.8%)
+### Peaks found: 2857
+### Plot:
+```{r}
+head(peaks)
+region <- as.character(granges(peaks[1]))
+plotSignalTracks(c(CTFC = "aligned/CTCF.bam"), region = region)
+```
