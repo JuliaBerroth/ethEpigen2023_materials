@@ -1,0 +1,87 @@
+---
+title: "R Notebook"
+output: html_document
+---
+
+# Assignment Week 04
+
+```{r}
+suppressPackageStartupMessages({
+  library(AnnotationHub)
+  library(rtracklayer)
+  library(epiwraps)
+  library(GenomicRanges)
+})
+ah <- AnnotationHub()
+```
+
+## Downloading the peaks for mESC
+
+### Transcription factor p300
+```{r}
+dir.create("mESC")
+download.file("https://www.encodeproject.org/files/ENCFF460EOA/@@download/ENCFF460EOA.bed.gz", "mESC/p300.bed.gz")
+p300 <- rtracklayer::import("mESC/p300.bed.gz", format = "narrowPeak")
+```
+
+### Histone modifications
+#### H3K4me3
+```{r}
+download.file("https://www.encodeproject.org/files/ENCFF247GVM/@@download/ENCFF247GVM.bed.gz", "mESC/H3K4me3.bed.gz")
+H3K4me3 <- rtracklayer::import("mESC/H3K4me3.bed.gz", format = "narrowPeak")
+```
+
+#### H3K4me1
+```{r}
+download.file("https://www.encodeproject.org/files/ENCFF440FYE/@@download/ENCFF440FYE.bed.gz", "mESC/H3K4me1.bed.gz")
+H3K4me1 <- rtracklayer::import("mESC/H3K4me1.bed.gz", format = "narrowPeak")
+```
+
+#### H3K27ac
+```{r}
+download.file("https://www.encodeproject.org/files/ENCFF194TQD/@@download/ENCFF194TQD.bed.gz", "mESC/H3K27ac.bed.gz")
+H3K27ac <- rtracklayer::import("mESC/H3K27ac.bed.gz", format = "narrowPeak")
+```
+
+#### H3K27me3
+```{r}
+download.file("https://www.encodeproject.org/files/ENCFF276FGU/@@download/ENCFF276FGU.bed.gz", "mESC/H3K27me3.bed.gz")
+H3K27me3 <- rtracklayer::import("mESC/H3K27me3.bed.gz", format = "narrowPeak")
+```
+
+## Of the p300 peaks, what proportion overlap each of the marks?
+### H3K4me3
+```{r}
+p300_OverlapsH3K4me3 <- overlapsAny(p300,H3K4me3)
+LengthH3K4me3 <- length(p300_OverlapsH3K4me3)
+TruesH3K4me3 <- table(p300_OverlapsH3K4me3)["TRUE"]
+proportionH3K4me3 <- TruesH3K4me3/LengthH3K4me3
+proportionH3K4me3
+```
+
+### H3K4me1
+```{r}
+p300_OverlapsH3K4me1 <- overlapsAny(p300,H3K4me1)
+LengthH3K4me1 <- length(p300_OverlapsH3K4me1)
+TruesH3K4me1 <- table(p300_OverlapsH3K4me1)["TRUE"]
+proportionH3K4me1 <- TruesH3K4me1/LengthH3K4me1
+proportionH3K4me1
+```
+
+### H3K27ac
+```{r}
+p300_OverlapsH3K27ac <- overlapsAny(p300,H3K27ac)
+LengthH3K27ac <- length(p300_OverlapsH3K27ac)
+TruesH3K27ac <- table(p300_OverlapsH3K27ac)["TRUE"]
+proportionH3K27ac <- TruesH3K27ac/LengthH3K27ac
+proportionH3K27ac
+```
+
+### H3K27me3
+```{r}
+p300_OverlapsH3K27me3 <- overlapsAny(p300,H3K27me3)
+LengthH3K27me3 <- length(p300_OverlapsH3K27me3)
+TruesH3K27me3 <- table(p300_OverlapsH3K27me3)["TRUE"]
+proportionH3K27me3 <- TruesH3K27me3/LengthH3K27me3
+proportionH3K27me3
+```
