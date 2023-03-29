@@ -1,0 +1,67 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+# Assignment Week 5
+
+```{r}
+suppressPackageStartupMessages({
+  library(AnnotationHub)
+  library(ensembldb)
+  library(GenomicRanges)
+  library(epiwraps)
+  library(rtracklayer)
+  library(ggplot2)
+})
+ah <- AnnotationHub(localHub=TRUE)
+```
+
+## Bivalent domains (H3K27me3 & H3K4me3) in mESC
+
+Downloading of the correct files from the same cell type, because I'm not sure if I downloaded the correct files in the last assignment
+```{r}
+dir.create("mESC_bivalent")
+download.file("https://www.encodeproject.org/files/ENCFF276FGU/@@download/ENCFF276FGU.bed.gz", "mESC_bivalent/H3K27me3.bed.gz")
+H3K27me3 <- rtracklayer::import("mESC_bivalent/H3K27me3.bed.gz", format = "narrowPeak")
+download.file("https://www.encodeproject.org/files/ENCFF187DLC/@@download/ENCFF187DLC.bed.gz", "mESC_bivalent/H3K4me3.bed.gz")
+H3K4me3 <- rtracklayer::import("mESC_bivalent/H3K4me3.bed.gz", format = "narrowPeak")
+```
+
+Identifying bivalent domains in mESC:
+```{r}
+peakfiles <- list.files("mESC_bivalent/", full.names = TRUE)
+names(peakfiles) <- gsub("\\.bed", "", basename(peakfiles))
+peaks <- lapply(peakfiles, FUN = rtracklayer::import, format = "narrowPeak")
+regionUpset(peaks, nsets = length(peaks))
+```
+There are *14686* bivalent domains of HSK27me3 + H3K4me3 in mESC.
+
+## What happens to those regions upon differentiation?
+
+I'm choosing myoblasts as my differentiated cell type.
+Downloading the H3K27me3 & H3K4me3 peaks of myoblasts:
+```{r}
+download.file("https://www.encodeproject.org/files/ENCFF635VQE/@@download/ENCFF635VQE.bed.gz", "mESC_bivalent/H3K4me3Myoblast.bed.gz")
+H3K4me3Myoblast <- rtracklayer::import("mESC_bivalent/H3K4me3Myoblast.bed.gz", "narrowPeak")
+download.file("https://www.encodeproject.org/files/ENCFF071FEL/@@download/ENCFF071FEL.bed.gz", "mESC_bivalent/H3K27me3Myoblast.bed.gz")
+H3K27me3Myoblast <- rtracklayer::import("mESC_bivalent/H3K27me3Myoblast.bed.gz","narrowPeak")
+```
+
+Identifying bivalent domains:
+```{r}
+peakfiles <- list.files("mESC_bivalent/", full.names = TRUE)
+names(peakfiles) <- gsub("\\.bed", "", basename(peakfiles))
+peaks <- lapply(peakfiles, FUN = rtracklayer::import, format = "narrowPeak")
+regionUpset(peaks, nsets = length(peaks))
+```
+
+I find the question a little confusing, and therefore I'm not sure which overlaps are asked for.
+
+*Bivalent Domains:*
+H3K27me3Myoblast + H3K4me3Myoblast = 16
+H3K27me3Myoblast + H3K4me3Myoblast + H3K4me3 = 27
+H3K27me3Myoblast + H3K4me3Myoblast + H3K27me3 = 19
+H3K4me3Myoblast + H3K4me3 = 7988
+H3K4me3Myoblast + H3K4me3 + H3K27me3 = 3564
+H3K27me3Myoblast + H3K27me3 = 12813
+H3K27me3Myoblast + H3K27me3 + H3K4me3 = 3928
