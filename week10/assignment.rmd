@@ -1,0 +1,72 @@
+---
+title: "Assignment 10"
+author: "Julia Berroth"
+output: html_document
+---
+
+# Assignment 10
+```{r}
+suppressPackageStartupMessages({
+  library(GenomicRanges)
+  library(epiwraps)
+  library(ggplot2)
+  library(rGREAT)
+})
+```
+
+## Download & decompress the archive
+```{r}
+options(timeout = 6000)
+download.file("https://ethz-ins.org/content/w10.assignment.zip", "w10.assignment.zip")
+unzip("w10.assignment.zip")
+list.files()
+```
+
+## Clustering & visualization
+
+### Prepare regions & tracks
+```{r}
+tracks <- list.files(pattern = "bw$")
+peaks <- list.files(pattern="bed$")
+# we first import the peaks
+peaks <- lapply(peaks, rtracklayer::import.bed)
+# we'll focus on the high-quality peaks
+peaks <- lapply(peaks, FUN=function(x) x[x$score>800])
+# we get the union of non-redundant regions
+regions <- reduce(unlist(GRangesList(peaks)))
+```
+
+### Prepare ml and the clusters
+```{r}
+ml <- signal2Matrix(tracks, regions, extend = 2000)
+set.seed(123)
+cls <- clusterSignalMatrices(ml, k = 2:10)
+ggplot(cls$varExplained, aes(k, varExplained)) + geom_line()
+cl <- clusterSignalMatrices(ml, k = 5)
+
+```
+
+### Plot
+```{r}
+mycolors <- c("1" = "red", "2" = "blue", "3" = "darkgreen", "4" = "black", "5" = "orange")
+plotEnrichedHeatmaps(ml,colors = c("white", "red"), row_split = cl, mean_color = mycolors)
+d <- meltSignals(ml, splitBy = cl)
+ggplot(d, aes(position, mean, colour = sample)) + geom_line() + facet_wrap(~split)
+```
+
+## Enrichment analysis
+
+```{r, fig.width=11, fig.height=6}
+splitRegions <- split(regions, cl)
+job <- submitGreatJob(gr = splitRegions[["5"]], bg = regions, species = "hg38")
+res <- getEnrichmentTables(job)
+names(res)
+bp <- res$`GO Biological Process`
+head(bp)
+
+ggplot(head(bp, 15), aes(Hyper_Fold_Enrichment, reorder(name, Hyper_Adjp_BH), size = Hyper_Foreground_Region_Hits, color = -log10(Hyper_Adjp_BH))) + geom_point() + scale_color_viridis_c()
+```
+
+## Result description
+With the clustering and its visualization we can see that CREB1 and CREB3L1 are often binding in the same regions. Only in one region CREB1 stands out alone. CREB3 doesn't overlap with the others that much, mostly it binds much less than the other two or much more.
+In the enrichment analysis we can see that the biological processes which have the most hits, have also the best p-values, but are not that much enriched. These biological processes are the leukocyte migration & the negative regulation of DNA. Many processes which have a high p-value & are highly enriched have a low number in hits, as for example the negative regulation of granulocyte macrophage colony-stimulating factor production or the negative regulation of leukocyte degranulation.
