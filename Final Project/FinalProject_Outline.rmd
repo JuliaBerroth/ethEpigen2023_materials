@@ -1,0 +1,7 @@
+---
+title: "Final Project: Outline"
+output: html_document
+---
+* peaks zu verschiedene Ziite
+* anstatt venn diagramm, upset-plot --> luege wie überlappend MR & GR
+* heatmaps zum

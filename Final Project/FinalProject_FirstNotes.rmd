@@ -1,0 +1,17 @@
+# Final Project: First notes
+
+Students in this project: Julia Berroth, Timo Suter
+
+1. What is the topic?
+   * reanalysis of GR binding in the hippocampus, both at resting state and upon stress (https://www.nature.com/articles/s41467-021-24967-z)
+
+2. What data will you be using?
+   * using the data from here: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE126706
+
+3. What are the analyses you wish to reproduce, or the questions you wish to answer?
+   * significant binding peaks of GR
+   * differential binding of GR after acute stress vs. early morning baseline conditions
+
+4. Questions
+   * What does the axis descriptions on figure 2c-f mean?
+   * We don't know how to correctly download the data, so that we can use it for analysis. Can you help?
